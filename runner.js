@@ -15,6 +15,9 @@ function setup () {
   var main_canvas = createCanvas(canvasWidth, canvasHeight);
   main_canvas.parent('canvasContainer');
 
+  // const canvas = document.getElementById('defaultCanvas0');
+  // const context = canvas.getContext('2d', { willReadFrequently: true });
+
   alarmOverlaySlider = createSlider(0, 30, defaultAlarmSliderValue);
   alarmOverlaySlider.parent("slider1Container")
   alarmOverlaySlider.changed(sliderUpdated);

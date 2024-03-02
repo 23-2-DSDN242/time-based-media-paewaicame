@@ -3,7 +3,7 @@ function draw_clock(obj) {
     // YOUR MAIN CLOCK CODE GOES HERE
     background(0); //  beige
     fill(200);
-    textFont("Rubik-Regular");
+    textFont("Arial");
     
     let maxFontSize = 200;
     // let steppedSeconds = obj.seconds % 2 == 0 ? 0 : 1000;
