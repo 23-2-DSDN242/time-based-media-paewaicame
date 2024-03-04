@@ -9,22 +9,47 @@ function draw_clock(obj) {
     //        = 0 if the alarm is currently going off
     //        > 0 --> the number of seconds until alarm should go off
     background(0);
-
-    var buffer = createGraphics(width, height);
-    buffer.background(0);
-    buffer.fill(255);
-    buffer.textSize(250);
-    buffer.textAlign(CENTER, CENTER);
+    buffer.background(64,0,0,255);
+    buffer.fill(255,64,64,255);
+    buffer.textSize(220);
+    buffer.textAlign(LEFT, CENTER);
     buffer.textFont("Fraunces");
-    let string = obj.hours + ":" + obj.minutes + ":" + obj.seconds;
-    buffer.text(string, width / 2, height / 2);
 
-    let totalColumns = 45;
-    let totalRows = 13;
+    let radius = 20;
+    let theta = (obj.seconds + obj.millis/1000) * 2
+    let xOffset = radius * Math.cos(theta)
+    let yOffset = radius * Math.sin(theta)
+
+    // let objString = {};
+    // if (obj.seconds.length == 1) {
+    //     objString.seconds = obj.seconds + "0";
+    //     console.log("yippee")
+    // } else {
+    //     objString.seconds = obj.seconds;
+    //     console.log("nosiree")
+    // }
+    // if (obj.minutes.length == 1) {
+    //     objString.minutes = obj.minutes + "0";
+    // } else {
+    //     objString.minutes = obj.minutes;
+    // }
+    // if (obj.hours.length == 1) {
+    //     objString.hours = obj.hours + "0";
+    // } else {
+    //     objString.hours = obj.hours;
+    // }
+
+    // let string = objString.hours + ":" + objString.minutes + ":" + objString.seconds;
+    let string = obj.hours + ":" + obj.minutes + ":" + obj.seconds;
+    buffer.text(string, 50 + xOffset, height / 2 + yOffset);
+
+    let totalColumns = 32;
+    let totalRows = 9;
     let screenWidth = 890;
     let screenHeight = 400;
-    let segmentLength = 7;
-    let segmentWidth = 5;
+    let segmentLength = 10;
+    let segmentWidth = 6;
+
     function drawGrid() {
         for (let row = 0; row < totalRows; row++) {
             for (let col = 0; col < totalColumns; col++) {
@@ -88,7 +113,11 @@ function draw_clock(obj) {
         });
     }
     function drawSegment(drawNumberTranslateX, drawNumberTranslateY) {
-        sampledColor = buffer.get(drawNumberTranslateX, drawNumberTranslateY);
+        try {
+            sampledColor = buffer.get(drawNumberTranslateX, drawNumberTranslateY);
+        } catch (error) {
+            sampledColor = [64,0,0,255]
+        }
         fill(sampledColor);
         beginShape();
         vertex(-segmentLength, 0);
