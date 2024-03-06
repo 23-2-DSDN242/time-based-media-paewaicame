@@ -10,19 +10,15 @@ let alarmOverlayCheckbox;
 let alarmOverlaySlider;
 let defaultAlarmSliderValue=15;
 
-let buffer;
+let buffer; // creating offscreen buffer outside the function scope
 
 function setup () {
-    // const canvas = document.getElementById("canvasContainer");
-    // const test = canvas.getContext("2d", { willReadFrequently: true })
-
     // create the drawing canvas, save the canvas element
     var main_canvas = createCanvas(canvasWidth, canvasHeight);
     main_canvas.parent('canvasContainer');
     
-    // setting up offscreen buffer
+    // definine the offscreen buffer
     buffer = createGraphics(width, height);
-    // buffer.loadPixels();
     
     alarmOverlaySlider = createSlider(0, 30, defaultAlarmSliderValue);
     alarmOverlaySlider.parent("slider1Container")
