@@ -6,4 +6,6 @@
 
 This project is a spin on classic segmented displays often found in digital LCD timepieces like digital watches and clocks. Time is displayed in sophisticated typography that takes advantage of a matrix of segmented displays converting a typically limiting form of text display into an interesting and modern take on a segmented display.
 
-The clock's graphics are drawn onto an off-screen buffer, which is then sampled by an array of segments. Subtle movement and the ticking of the clock
+The clock's graphics are drawn onto an off-screen buffer, which is then sampled by an array of segments. This allows for full customisation of the clock's graphics for the segmented display to pull from.
+
+Each number transitions as it changes its value, making for an exciting and dynamic clock face. Each time the minute ticks over, a burst of confetti fills the background and the clock changes color.

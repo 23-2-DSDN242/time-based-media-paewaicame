@@ -10,15 +10,37 @@ let alarmOverlayCheckbox;
 let alarmOverlaySlider;
 let defaultAlarmSliderValue=15;
 
-let buffer; // creating offscreen buffer outside the function scope
+// creating offscreen buffer outside the function scope
+let buffer;
+// creating variable to hold typeface
+let clockTypeface;
+// linear congruential generator because i'm not allowed to use Math.random >:D
+function lcg(seed, multiplier, increment, modulus, length) {
+    const results = [];
+    for (let i = 0; i < length; i++) {
+        seed = (seed * multiplier + increment) % modulus;
+        results.push(seed/modulus);
+    }
+    return results;
+};
+let lcgArrayLength = 100;
+let lcgArray = lcg(58008,16807,0,2147483647,lcgArrayLength);
+
+// loading typeface
+function preload() {
+    clockTypeface = loadFont('MonaspaceNeon-ExtraBold.woff')
+    // clockTypeface = loadFont('Fixture Condensed Bold.otf')
+}
 
 function setup () {
     // create the drawing canvas, save the canvas element
     var main_canvas = createCanvas(canvasWidth, canvasHeight);
     main_canvas.parent('canvasContainer');
     
-    // definine the offscreen buffer
-    buffer = createGraphics(width, height);
+    // extra setup things i know im in runner.js dont yell at me k thx :)
+    buffer = createGraphics(width, height); // defining the offscreen buffer
+    frameRate(10); // for performance, not really that noticeable
+    colorMode(RGB);
     
     alarmOverlaySlider = createSlider(0, 30, defaultAlarmSliderValue);
     alarmOverlaySlider.parent("slider1Container")
