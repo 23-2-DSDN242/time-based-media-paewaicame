@@ -10,20 +10,22 @@ let alarmOverlayCheckbox;
 let alarmOverlaySlider;
 let defaultAlarmSliderValue=15;
 
+// extra setup things i know im in runner.js dont yell at me k thx :)
 // creating offscreen buffer outside the function scope
 let buffer;
 // creating variable to hold typeface
 let clockTypeface;
 // linear congruential generator because i'm not allowed to use Math.random >:D
+// modified code courtesy of https://www.freecodecamp.org/news/random-number-generator/
 function lcg(seed, multiplier, increment, modulus, length) {
     const results = [];
     for (let i = 0; i < length; i++) {
         seed = (seed * multiplier + increment) % modulus;
-        results.push(seed/modulus);
+        results.push(seed/modulus); // divides by modulus for a value between 0 and 1
     }
     return results;
 };
-let lcgArrayLength = 100;
+let lcgArrayLength = 150;
 let lcgArray = lcg(58008,16807,0,2147483647,lcgArrayLength);
 
 // loading typeface
@@ -38,8 +40,9 @@ function setup () {
     main_canvas.parent('canvasContainer');
     
     // extra setup things i know im in runner.js dont yell at me k thx :)
+    main_canvas.mouseClicked(fireworksBurst); // click on the canvas to change colors
     buffer = createGraphics(width, height); // defining the offscreen buffer
-    frameRate(10); // for performance, not really that noticeable
+    frameRate(24); // for performance, not really that noticeable, kinda adds to the effect
     colorMode(RGB);
     
     alarmOverlaySlider = createSlider(0, 30, defaultAlarmSliderValue);

@@ -1,14 +1,14 @@
 // segmented numbers
-let totalColumns = 30;
-let totalRows = 9;
-let screenWidth = 890;
-let screenHeight = 400;
-let segmentLength = 10;
-let segmentWidth = 7;
-let segmentShear = -10;
+let totalRows = 9; // total number rows in the display
+let totalColumns = 29; // total number columns in the display
+let screenWidth = 880; // width of the segmented display
+let screenHeight = 400; // height of the segmented display
+let segmentLength = 10; // length of each segment
+let segmentWidth = 8; // width of each segment
+let segmentShear = -15; // segment slant, in degrees
 
 // color palette
-let colorPaletteSelected = 0;
+let colorPaletteIndex = 0;
 let colorPalette = [
     { // red
         background: [55, 6, 22],
@@ -41,18 +41,25 @@ let colorPalette = [
         outside: [0, 0, 0]
     }
 ];
-
+// defines variables to reference
 let colorOutside;
 let colorBackground;
 let colorForeground;
 let colorForeground2;
-function setColorPalette() {
-    colorOutside = colorPalette[colorPaletteSelected % colorPalette.length].outside;
-    colorBackground = colorPalette[colorPaletteSelected % colorPalette.length].background;
-    colorForeground = colorPalette[colorPaletteSelected % colorPalette.length].foreground;
-    colorForeground2 = colorPalette[colorPaletteSelected % colorPalette.length].foreground2;
+function setColorPalette(inverse) {
+    if (inverse) {
+        colorOutside = colorPalette[colorPaletteIndex % colorPalette.length].outside;
+        colorBackground = colorPalette[colorPaletteIndex % colorPalette.length].foreground;
+        colorForeground = colorPalette[colorPaletteIndex % colorPalette.length].background;
+        colorForeground2 = colorPalette[colorPaletteIndex % colorPalette.length].foreground2;
+    } else {
+        colorOutside = colorPalette[colorPaletteIndex % colorPalette.length].outside;
+        colorBackground = colorPalette[colorPaletteIndex % colorPalette.length].background;
+        colorForeground = colorPalette[colorPaletteIndex % colorPalette.length].foreground;
+        colorForeground2 = colorPalette[colorPaletteIndex % colorPalette.length].foreground2;
+    }
 }
-setColorPalette();
+setColorPalette(false);
 
 // fireworks
 let fireworksList = [];
@@ -62,7 +69,7 @@ let fireworksGravity = 0; // didnt end up using this
 let fireworksMaxHorizontalVelocity = 50;
 let fireworksMaxVerticalVelocity = 30;
 let fireworkIndex = 0;
-function createFirework() {
+function fireworksCreate() {
     fireworkIndex++;
     fireworksList.push(
         {
@@ -77,13 +84,14 @@ function createFirework() {
         }
     );
 };
-function fireworkBurst() {
+function fireworksBurst() {
     for (let i = 0; i < 20; i++) {
-        createFirework();
+        fireworksCreate();
     }
-    colorPaletteSelected++;
-    setColorPalette();
+    colorPaletteIndex++;
+    setColorPalette(false);
 }
+
 // clock milestone detection variables
 let firstFrame = true;
 let currentHour;
@@ -92,6 +100,8 @@ let currentMinute;
 let lastMinute;
 let currentSecond;
 let lastSecond;
+let currentAlarm;
+let lastAlarm;
 
 let string = [
     {
@@ -101,7 +111,7 @@ let string = [
             numberOld: "",
             numberNew: "",
             numberPrev: "",
-            transition: 0
+            typeTransition: 0
         }
     },
     {
@@ -111,7 +121,7 @@ let string = [
             numberOld: "",
             numberNew: "",
             numberPrev: "",
-            transition: 0
+            typeTransition: 0
         }
     },
     {
@@ -124,7 +134,7 @@ let string = [
             numberOld: "",
             numberNew: "",
             numberPrev: "",
-            transition: 0
+            typeTransition: 0
         }
     },
     {
@@ -134,7 +144,7 @@ let string = [
             numberOld: "",
             numberNew: "",
             numberPrev: "",
-            transition: 0
+            typeTransition: 0
         }
     },
     {
@@ -147,7 +157,7 @@ let string = [
             numberOld: "",
             numberNew: "",
             numberPrev: "",
-            transition: 0
+            typeTransition: 0
         }
     },
     {
@@ -157,7 +167,7 @@ let string = [
             numberOld: "",
             numberNew: "",
             numberPrev: "",
-            transition: 0
+            typeTransition: 0
         }
     },
 ];
@@ -167,8 +177,15 @@ let stringLength = string.length;
 let typeSize = 190;
 let typeKerning = typeSize * 0.575;
 let typeYOffset = -5;
-let typeTransitionFrames = 10;
-let typeTransitionDistance = 100;
+let typeTransitionFrames = 12;
+let typeTransitionDistance = 140;
+
+// alarm variables
+let progressBarWidth = screenWidth / totalColumns * 28;
+let progressBarHeight = 50;
+let progressBarYPosition = 380;
+let progressBarTransitionFactor = 0;
+let progressBarTransitionFrames = 12;
 
 function draw_clock(obj) {
     // draw your own clock here based on the values of obj:
@@ -188,6 +205,8 @@ function draw_clock(obj) {
     currentMinute = obj.minutes;
     lastSecond = currentSecond;
     currentSecond = obj.seconds;
+    lastAlarm = currentAlarm;
+    currentAlarm = obj.seconds_until_alarm;
 
     background(colorOutside);
     stroke(colorOutside);
@@ -196,12 +215,12 @@ function draw_clock(obj) {
     // draw a firework after a certain number of frames
     if (fireworksIndex > fireworksFrequency) {
         fireworksIndex = 0;
-        createFirework();
+        fireworksCreate();
     } else {
         fireworksIndex++;
     }
 
-    // iterate through each firework in the list and update its data
+    // iterate through each firework in the list, update its data, and draw it.
     for (let i = 0; i < fireworksList.length; i++) {
         let firework = fireworksList[i];
         firework.age -= 1;
@@ -218,8 +237,9 @@ function draw_clock(obj) {
         }
     }
 
+    // create more fireworks when the minute changes
     if (lastMinute != currentMinute && firstFrame == false) {
-        fireworkBurst();
+        fireworksBurst();
     }
 
     // calculations for circular motion
@@ -245,49 +265,47 @@ function draw_clock(obj) {
         objString.hours = obj.hours;
     }
 
-    let numbersString = objString.hours + objString.minutes + objString.seconds;
-
-    lastMinute = currentMinute;
-    currentMinute = obj.minutes;
-
-    if (lastSecond != currentSecond && firstFrame == false) {
-
-    }
+    let numbersString = objString.hours.toString() + objString.minutes.toString() + objString.seconds.toString();
 
     // draw text on screen
     buffer.textSize(typeSize);
     buffer.textAlign(CENTER, CENTER);
     buffer.textFont(clockTypeface);
-
-
     let textColor = color(colorForeground);
     string.forEach((element, index) => {
         if (element.type == "number") {
+            // store previous number when current number changes
             element.data.numberOld = element.data.numberNew;
             element.data.numberNew = numbersString[element.data.position];
             if (element.data.numberOld != element.data.numberNew) {
                 element.data.numberPrev = element.data.numberOld;
-                element.data.transition = 0;
+                element.data.typeTransition = 0;
             }
-            transitionSkewed = ((element.data.transition * -1 + 1) ** 3) * -1 + 1;
-
-            textColor.setAlpha(transitionSkewed * 255);
+            // skew transition value for easing animation
+            let typeTransitionSkewed = ((element.data.typeTransition * -1 + 1) ** 3) * -1 + 1;
+            // draw new number
+            textColor.setAlpha(typeTransitionSkewed * 255);
             buffer.fill(textColor);
             buffer.text(
                 element.data.numberNew,
                 width / 2 + circularXOffset + (typeKerning * index) - (typeKerning * (stringLength - 1) / 2),
-                height / 2 + circularYOffset + typeYOffset + (-typeTransitionDistance * transitionSkewed + typeTransitionDistance)
+                height / 2 + circularYOffset + typeYOffset + (-typeTransitionDistance * typeTransitionSkewed + typeTransitionDistance)
             );
-            textColor.setAlpha(transitionSkewed * -255 + 255);
+            // draw old number
+            textColor.setAlpha(typeTransitionSkewed * -255 + 255);
             buffer.fill(textColor);
             buffer.text(
                 element.data.numberPrev,
                 width / 2 + circularXOffset + (typeKerning * index) - (typeKerning * (stringLength - 1) / 2),
-                height / 2 + circularYOffset + typeYOffset + (-typeTransitionDistance * transitionSkewed)
+                height / 2 + circularYOffset + typeYOffset + (-typeTransitionDistance * typeTransitionSkewed)
             );
-
-            if (element.data.transition < 1) {
-                element.data.transition += 1 / (typeTransitionFrames - 1);
+            // update transitions
+            if (element.data.typeTransition < 1) {
+                if (element.data.typeTransition > 1) {
+                    element.data.typeTransition = 1;
+                } else {
+                    element.data.typeTransition += 1 / (typeTransitionFrames - 1);
+                }
             }
         } else if (element.type == "separator") {
             textColor.setAlpha(255);
@@ -299,6 +317,54 @@ function draw_clock(obj) {
             );
         }
     });
+
+
+    // alarm stuff, displays a bar on the screen when the alarm is set, blinks when it goes off
+    let progressBarFactor = obj.seconds_until_alarm > 0 ? obj.seconds_until_alarm / 30 : 0;
+    // transitions the bar in and out depending on if the alarm is set or not
+    if (obj.seconds_until_alarm >= 0) {
+        if (progressBarTransitionFactor > 1) {
+            progressBarTransitionFactor = 1;
+        } else {
+            progressBarTransitionFactor += 1 / (progressBarTransitionFrames - 1);
+        }
+    } else {
+        if (progressBarTransitionFactor < 0) {
+            progressBarTransitionFactor = 0;
+        } else {
+            progressBarTransitionFactor -= 1 / (progressBarTransitionFrames - 1);
+        }
+    }
+    // skews the transition factor
+    let progressBarTransitionFactorSkewed = ((progressBarTransitionFactor * -1 + 1) ** 3) * -1 + 1;
+    // makes the bar blink when the alarm goes off
+    if (obj.seconds_until_alarm == 0) {
+        let expression = obj.millis > 500
+        progressBarFactor = expression ? 0 : 1
+        setColorPalette(expression ? false : true);
+    }
+    if (progressBarTransitionFactor > 0) {
+        buffer.strokeWeight(0);
+        buffer.fill(colorForeground2);
+        buffer.rect(
+            (width / 2) - (progressBarWidth / 2 * progressBarTransitionFactorSkewed),
+            progressBarYPosition,
+            progressBarWidth * progressBarTransitionFactorSkewed,
+            progressBarHeight
+        );
+        buffer.fill(colorForeground);
+        buffer.rect(
+            (width / 2) - (progressBarWidth / 2 * progressBarTransitionFactorSkewed),
+            progressBarYPosition,
+            progressBarWidth * progressBarFactor * progressBarTransitionFactorSkewed,
+            progressBarHeight
+        );
+    }
+    // reset the color palette when the alarm stops on the occasion it doesnt do it by itself lol
+    if (lastAlarm >= 0 && currentAlarm < 0) {
+        setColorPalette(false);
+    }
+
     // buffer.filter(BLUR, 1) // blurs the buffer, causes the segments to fade instead of blink, might use idk
     drawGrid();
     firstFrame = false;
