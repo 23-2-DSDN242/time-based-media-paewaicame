@@ -22,4 +22,4 @@ When the alarm is set, a progress bar appears via a smooth transition, displayin
 ## ChatGPT usage
 ChatGPT was used in the development of this project to debug issues and provide personalised insight on my project goals. For instance, ChatGPT suggested drawing graphics to an offscreen buffer, which greatly improve the appearance and performance of the final product. ChatGPT was not used to generate sizeable blocks of code to copy and paste, or to provide ideas that would create a major diversion from my initial concept.
 
-The entire chat conversation for this project can be found [here](https://chat.openai.com/share/580b8a50-efde-41ae-94aa-3da89c38b1d2)
+The entire chat conversation for this project can be found [here](https://chat.openai.com/share/30cb5df0-cef7-4c77-951e-62b87adb00df)
