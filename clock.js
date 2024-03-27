@@ -8,7 +8,7 @@ let segmentWidth = 8; // width of each segment
 let segmentShear = -15; // segment slant, in degrees
 
 // color palette
-let colorPaletteIndex = 0;
+let colorPaletteIndex = 0; // specifies which color palette to use
 let colorPalette = [
     { // red
         background: [55, 6, 22],
@@ -41,11 +41,14 @@ let colorPalette = [
         outside: [0, 0, 0]
     }
 ];
-// defines variables to reference
+
+// color palette variables to reference later
 let colorOutside;
 let colorBackground;
 let colorForeground;
 let colorForeground2;
+
+// assign color palette variables to specified palette
 function setColorPalette(inverse) {
     if (inverse) {
         colorOutside = colorPalette[colorPaletteIndex % colorPalette.length].outside;
@@ -61,17 +64,18 @@ function setColorPalette(inverse) {
 }
 setColorPalette(false);
 
-// fireworks
-let fireworksList = [];
-let fireworksIndex = 0;
-let fireworksFrequency = 7;
-let fireworksGravity = 0; // didnt end up using this
-let fireworksMaxHorizontalVelocity = 50;
-let fireworksMaxVerticalVelocity = 30;
-let fireworkIndex = 0;
+// firework variables
+let fireworksArray = []; // stores each firework in an array
+let fireworksIndex = 0; // counts up each frame, not to be confused with fireworkIndex
+let fireworksFrequency = 7; // specifies how often fireworks are created
+let fireworksGravity = 0; // firework gravity, didnt end up using this
+let fireworksMaxHorizontalVelocity = 50; // max horizontal velocity for each firework
+let fireworksMaxVerticalVelocity = 30; // max vertical velocity for each firework
+let fireworkIndex = 0; // identifies each firework for random number generation, not to be confused with fireworksIndex
+
+// create a firework and add it to the array
 function fireworksCreate() {
-    fireworkIndex++;
-    fireworksList.push(
+    fireworksArray.push(
         {
             xPosition: width / 2,
             yPosition: -75,
@@ -83,7 +87,10 @@ function fireworksCreate() {
             age: 40
         }
     );
+    fireworkIndex++;
 };
+
+// generate 20 fireworks at once and switch the color palette
 function fireworksBurst() {
     for (let i = 0; i < 20; i++) {
         fireworksCreate();
@@ -92,8 +99,7 @@ function fireworksBurst() {
     setColorPalette(false);
 }
 
-// clock milestone detection variables
-let firstFrame = true;
+// clock milestone detection variables, stores the current and last value for tracking changes
 let currentHour;
 let lastHour;
 let currentMinute;
@@ -103,6 +109,10 @@ let lastSecond;
 let currentAlarm;
 let lastAlarm;
 
+// equals true for the first frame only, used to prevent fireworksBurst() from accidentally running on reload
+let firstFrame = true;
+
+// stores the current value, previous value, position, and transition progression for each digit of the clock
 let string = [
     {
         type: "number",
@@ -174,18 +184,20 @@ let string = [
 let stringLength = string.length;
 
 // typography variables
-let typeSize = 190;
-let typeKerning = typeSize * 0.575;
-let typeYOffset = -5;
-let typeTransitionFrames = 12;
-let typeTransitionDistance = 140;
+let typeSize = 190; // how large the text is
+let typeKerning = typeSize * 0.575; // spacing between the characters
+let typeYOffset = -5; // vertical offset
+let typeTransitionFrames = 12; // duration of the number transition
+let typeTransitionDistance = 140; // vertical length of the number transition
 
 // alarm variables
-let progressBarWidth = screenWidth / totalColumns * 28;
-let progressBarHeight = 50;
-let progressBarYPosition = 380;
-let progressBarTransitionFactor = 0;
-let progressBarTransitionFrames = 12;
+let progressBarWidth = screenWidth / totalColumns * 28; // width of the progress bar, equal to 28 digits
+let progressBarHeight = screenHeight / totalRows; // height of the progress bar, equal
+let progressBarYPosition = 380; // vertical position of the progress bar
+let progressBarTransitionFactor = 0; // variable to track progress bar transition progression
+let progressBarTransitionFrames = 12; // length of the progress bar transition
+let progressBarFactor; // tracks the progression of the progress bar as a number between 0 and 1
+let progressBarFactorInitial; // tracks the initial duration of the alarm
 
 function draw_clock(obj) {
     // draw your own clock here based on the values of obj:
@@ -198,7 +210,7 @@ function draw_clock(obj) {
     //        = 0 if the alarm is currently going off
     //        > 0 --> the number of seconds until alarm should go off
 
-    // keeping track of when the numbers change
+    // keeping track of number changes
     lastHour = currentHour;
     currentHour = obj.hours;
     lastMinute = currentMinute;
@@ -208,6 +220,7 @@ function draw_clock(obj) {
     lastAlarm = currentAlarm;
     currentAlarm = obj.seconds_until_alarm;
 
+    // set canvas backgrounds and strokes
     background(colorOutside);
     stroke(colorOutside);
     buffer.background(colorBackground);
@@ -221,14 +234,14 @@ function draw_clock(obj) {
     }
 
     // iterate through each firework in the list, update its data, and draw it.
-    for (let i = 0; i < fireworksList.length; i++) {
-        let firework = fireworksList[i];
+    for (let i = 0; i < fireworksArray.length; i++) {
+        let firework = fireworksArray[i];
         firework.age -= 1;
         if (firework.age <= 0) {
-            fireworksList.splice(i, 1);
+            fireworksArray.splice(i, 1);
         } else {
             // let fireworkRadius = firework.size * (firework.age / firework.lifetime) * ((firework.age % 5 / 5) * 0.5 + 0.5);
-            let fireworkRadius = firework.size * (firework.age / firework.lifetime);
+            let fireworkRadius = firework.size * map(firework.age,0,firework.lifetime,0,1);
             firework.xPosition += firework.xVelocity;
             firework.yPosition += firework.yVelocity;
             firework.yVelocity += fireworksGravity;
@@ -242,12 +255,12 @@ function draw_clock(obj) {
         fireworksBurst();
     }
 
-    // calculations for circular motion
-    let radius = 10;
+    // calculations for ambient circular motion
     let theta = (obj.seconds + obj.millis / 1000) * 2;
-    let circularXOffset = radius * Math.cos(theta);
-    let circularYOffset = radius * Math.sin(theta);
+    let circularXOffset = 10 * Math.cos(theta);
+    let circularYOffset = 10 * Math.sin(theta);
 
+    // add leading zeroes to single-digit numbers
     let objString = {};
     if (str(obj.seconds).length == 1) {
         objString.seconds = "0" + obj.seconds;
@@ -265,24 +278,28 @@ function draw_clock(obj) {
         objString.hours = obj.hours;
     }
 
-    let numbersString = objString.hours.toString() + objString.minutes.toString() + objString.seconds.toString();
+    // concatenate numbers into a single string
+    let numbersString = `${objString.hours}${objString.minutes}${objString.seconds}`;
+    // let numbersString = "LMAOOO"
 
-    // draw text on screen
+    // draw numbers on the canvas
     buffer.textSize(typeSize);
     buffer.textAlign(CENTER, CENTER);
     buffer.textFont(clockTypeface);
     let textColor = color(colorForeground);
     string.forEach((element, index) => {
         if (element.type == "number") {
-            // store previous number when current number changes
+            // store previous number when current number changes for transition
             element.data.numberOld = element.data.numberNew;
             element.data.numberNew = numbersString[element.data.position];
             if (element.data.numberOld != element.data.numberNew) {
                 element.data.numberPrev = element.data.numberOld;
                 element.data.typeTransition = 0;
             }
-            // skew transition value for easing animation
+
+            // skew transition value for an easing effect
             let typeTransitionSkewed = ((element.data.typeTransition * -1 + 1) ** 3) * -1 + 1;
+            
             // draw new number
             textColor.setAlpha(typeTransitionSkewed * 255);
             buffer.fill(textColor);
@@ -291,6 +308,7 @@ function draw_clock(obj) {
                 width / 2 + circularXOffset + (typeKerning * index) - (typeKerning * (stringLength - 1) / 2),
                 height / 2 + circularYOffset + typeYOffset + (-typeTransitionDistance * typeTransitionSkewed + typeTransitionDistance)
             );
+            
             // draw old number
             textColor.setAlpha(typeTransitionSkewed * -255 + 255);
             buffer.fill(textColor);
@@ -299,6 +317,7 @@ function draw_clock(obj) {
                 width / 2 + circularXOffset + (typeKerning * index) - (typeKerning * (stringLength - 1) / 2),
                 height / 2 + circularYOffset + typeYOffset + (-typeTransitionDistance * typeTransitionSkewed)
             );
+            
             // update transitions
             if (element.data.typeTransition < 1) {
                 if (element.data.typeTransition > 1) {
@@ -307,7 +326,7 @@ function draw_clock(obj) {
                     element.data.typeTransition += 1 / (typeTransitionFrames - 1);
                 }
             }
-        } else if (element.type == "separator") {
+        } else if (element.type == "separator") { // draw number separators
             textColor.setAlpha(255);
             buffer.fill(textColor);
             buffer.text(
@@ -318,9 +337,13 @@ function draw_clock(obj) {
         }
     });
 
-
     // alarm stuff, displays a bar on the screen when the alarm is set, blinks when it goes off
-    let progressBarFactor = obj.seconds_until_alarm > 0 ? obj.seconds_until_alarm / 30 : 0;
+    progressBarFactor = obj.seconds_until_alarm > 0 ? map(obj.seconds_until_alarm,0,progressBarFactorInitial,0,1) : 0;
+
+    if (lastAlarm <= 0 && currentAlarm > 0) {
+        progressBarFactorInitial = currentAlarm;
+    }
+    
     // transitions the bar in and out depending on if the alarm is set or not
     if (obj.seconds_until_alarm >= 0) {
         if (progressBarTransitionFactor > 1) {
@@ -335,14 +358,18 @@ function draw_clock(obj) {
             progressBarTransitionFactor -= 1 / (progressBarTransitionFrames - 1);
         }
     }
-    // skews the transition factor
+    
+    // skews the transition factor for an easing effect
     let progressBarTransitionFactorSkewed = ((progressBarTransitionFactor * -1 + 1) ** 3) * -1 + 1;
+    
     // makes the bar blink when the alarm goes off
     if (obj.seconds_until_alarm == 0) {
-        let expression = obj.millis > 500
-        progressBarFactor = expression ? 0 : 1
+        let expression = obj.millis > 500;
+        progressBarFactor = expression ? 0 : 1;
         setColorPalette(expression ? false : true);
     }
+
+    // draw the progress bar
     if (progressBarTransitionFactor > 0) {
         buffer.strokeWeight(0);
         buffer.fill(colorForeground2);
@@ -360,16 +387,20 @@ function draw_clock(obj) {
             progressBarHeight
         );
     }
-    // reset the color palette when the alarm stops on the occasion it doesnt do it by itself lol
+
+    // reset the blinking animation when the alarm stops in case it doesnt for some reason lol
     if (lastAlarm >= 0 && currentAlarm < 0) {
         setColorPalette(false);
     }
 
     // buffer.filter(BLUR, 1) // blurs the buffer, causes the segments to fade instead of blink, might use idk
-    drawGrid();
+    drawGrid(); // draw the segmented display based on the buffer
     firstFrame = false;
 }
+
+// draws the entire grid
 function drawGrid() {
+    // iterate over a 2D array and draw a number for each grid cell
     for (let row = 0; row < totalRows; row++) {
         for (let col = 0; col < totalColumns; col++) {
             push();
@@ -382,69 +413,49 @@ function drawGrid() {
         }
     }
 }
+
+// draws a single number
 function drawNumber(drawGridTranslateX, drawGridTranslateY) {
     let segmentPositions = [
-        [
-            {
-                displaceX: 0,
-                displaceY: 0,
-                orientation: 0
-            },
-            {
-                displaceX: 0,
-                displaceY: -segmentLength * 2,
-                orientation: 0
-            },
-            {
-                displaceX: 0,
-                displaceY: segmentLength * 2,
-                orientation: 0
-            },
-            {
-                displaceX: -segmentLength,
-                displaceY: -segmentLength,
-                orientation: 1
-            },
-            {
-                displaceX: -segmentLength,
-                displaceY: segmentLength,
-                orientation: 1
-            },
-            {
-                displaceX: segmentLength,
-                displaceY: -segmentLength,
-                orientation: 1
-            },
-            {
-                displaceX: segmentLength,
-                displaceY: segmentLength,
-                orientation: 1
-            }
-        ],
-        [
-            {
-                displaceX: segmentLength,
-                displaceY: 0,
-                orientation: 0
-            },
-            {
-                displaceX: -segmentLength,
-                displaceY: 0,
-                orientation: 0
-            },
-            {
-                displaceX: 0,
-                displaceY: segmentLength,
-                orientation: 1
-            },
-            {
-                displaceX: 0,
-                displaceY: -segmentLength,
-                orientation: 1
-            }
-        ],
+        {
+            displaceX: 0,
+            displaceY: 0,
+            orientation: 0
+        },
+        {
+            displaceX: 0,
+            displaceY: -segmentLength * 2,
+            orientation: 0
+        },
+        {
+            displaceX: 0,
+            displaceY: segmentLength * 2,
+            orientation: 0
+        },
+        {
+            displaceX: -segmentLength,
+            displaceY: -segmentLength,
+            orientation: 1
+        },
+        {
+            displaceX: -segmentLength,
+            displaceY: segmentLength,
+            orientation: 1
+        },
+        {
+            displaceX: segmentLength,
+            displaceY: -segmentLength,
+            orientation: 1
+        },
+        {
+            displaceX: segmentLength,
+            displaceY: segmentLength,
+            orientation: 1
+        }
     ];
-    segmentPositions[0].forEach(element => {
+
+    // iterate over each segment position and draw a segment
+    segmentPositions.forEach(element => {
         push();
         drawNumberTranslateX = drawGridTranslateX + element.displaceX;
         drawNumberTranslateY = drawGridTranslateY + element.displaceY;
@@ -456,7 +467,10 @@ function drawNumber(drawGridTranslateX, drawGridTranslateY) {
         pop();
     });
 }
+
+// draws a single segment
 function drawSegment(drawNumberTranslateX, drawNumberTranslateY) {
+    // sample a color from the offscreen buffer to color the segment
     try {
         sampledColor = buffer.get(drawNumberTranslateX, drawNumberTranslateY);
     } catch (error) {

@@ -16,6 +16,7 @@ let buffer;
 // creating variable to hold typeface
 let clockTypeface;
 // linear congruential generator because i'm not allowed to use Math.random >:D
+
 // modified code courtesy of https://www.freecodecamp.org/news/random-number-generator/
 function lcg(seed, multiplier, increment, modulus, length) {
     const results = [];
@@ -25,13 +26,14 @@ function lcg(seed, multiplier, increment, modulus, length) {
     }
     return results;
 };
+// end of code excerpt
+
 let lcgArrayLength = 150;
 let lcgArray = lcg(58008,16807,0,2147483647,lcgArrayLength);
 
 // loading typeface
 function preload() {
     clockTypeface = loadFont('MonaspaceNeon-ExtraBold.woff')
-    // clockTypeface = loadFont('Fixture Condensed Bold.otf')
 }
 
 function setup () {
@@ -39,11 +41,11 @@ function setup () {
     var main_canvas = createCanvas(canvasWidth, canvasHeight);
     main_canvas.parent('canvasContainer');
     
-    // extra setup things i know im in runner.js dont yell at me k thx :)
+    // extras stuff i have added :D
     main_canvas.mouseClicked(fireworksBurst); // click on the canvas to change colors
     buffer = createGraphics(width, height); // defining the offscreen buffer
     frameRate(24); // for performance, not really that noticeable, kinda adds to the effect
-    colorMode(RGB);
+    colorMode(RGB); // for color palette storage
     
     alarmOverlaySlider = createSlider(0, 30, defaultAlarmSliderValue);
     alarmOverlaySlider.parent("slider1Container")
